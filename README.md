@@ -14,7 +14,7 @@
 ## 演算法說明
 - 程式透過 `heapq` 維護一個優先佇列 (Priority Queue)，並使用 `min_cost` 二維陣列記錄目前到達各點的最小成本，以達到 $O(E \log V)$ 的效率。
 
-# Program S最小生成樹
+# Program S 最小生成樹
 
 此專案旨在解決「最小生成樹 (Minimum Spanning Tree, MST)」問題，透過優化道路連接方式來計算可以省下的電費。
 
