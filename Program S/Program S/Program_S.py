@@ -1,52 +1,42 @@
 import sys
 import heapq
 
-class UnionFind:
-    def __init__(self, size):
-        self.parent = list(range(size))
+# 找尋根節點的函式(輔助 union 函式找尋迴圈)
+def find(parent, i):
+    if parent[i] == i:
+        return i
+    parent[i] = find(parent, parent[i])
+    return parent[i]
 
-    def find(self, i):
-        if self.parent[i] == i:
-            return i
-        self.parent[i] = self.find(self.parent[i])
-        return self.parent[i]
+def union(parent, i, j):
+    root_i = find(parent, i)
+    root_j = find(parent, j)
+    if root_i != root_j:
+        parent[root_i] = root_j
+        return True
+    return False
 
-    def union(self, i, j):
-        root_i = self.find(i)
-        root_j = self.find(j)
-        if root_i != root_j:
-            self.parent[root_i] = root_j
-            return True
-        return False
-
-class Path:
-    def __init__(self, dot1, dot2, cost):
-        self.dot1 = dot1
-        self.dot2 = dot2
-        self.cost = cost
-
-    def __lt__(self, other):
-        return self.cost < other.cost
-
+# Kruskal 演算法
 def kruskal(paths, m):
     paths.sort()
-    uf = UnionFind(m)
+    parent = list(range(m))
     mst_total_cost = 0
     edge_count = 0
 
-    for p in paths:
-        if uf.union(p.dot1, p.dot2):
-            mst_total_cost += p.cost
+    for cost, dot1, dot2 in paths:
+        if union(parent, dot1, dot2):
+            mst_total_cost += cost
             edge_count += 1
             if edge_count == m - 1:
                 break
     return mst_total_cost
 
+# Prim 演算法
 def prim(paths, m):
     adj = [[] for _ in range(m)]
-    for p in paths:
-        adj[p.dot1].append(p)
-        adj[p.dot2].append(p)
+    for cost, dot1, dot2 in paths:
+        adj[dot1].append((cost, dot2))
+        adj[dot2].append((cost, dot1))
 
     mst_total_cost = 0
     pq = []
@@ -57,26 +47,26 @@ def prim(paths, m):
             continue
         
         visit.add(start)
-        for p in adj[start]:
-            heapq.heappush(pq, p)
+        for edge in adj[start]:
+            heapq.heappush(pq, edge)
 
         while pq and len(visit) < m:
-            now = heapq.heappop(pq)
-            target_node = now.dot2 if now.dot1 in visit else now.dot1
+            cost, target_node = heapq.heappop(pq)
 
             if target_node in visit:
                 continue
 
             visit.add(target_node)
-            mst_total_cost += now.cost
+            mst_total_cost += cost
 
-            for p in adj[target_node]:
-                next_target = p.dot2 if p.dot1 == target_node else p.dot1
+            for next_cost, next_target in adj[target_node]:
                 if next_target not in visit:
-                    heapq.heappush(pq, p)
+                    heapq.heappush(pq, (next_cost, next_target))
+                    
     return mst_total_cost
 
 def main():
+    # 讀取輸入
     line = sys.stdin.readline()
     if not line: return
     t = int(line.strip())
@@ -91,7 +81,7 @@ def main():
         
         for _ in range(n):
             d1, d2, cost = map(int, sys.stdin.readline().split())
-            paths.append(Path(d1, d2, cost))
+            paths.append((cost, d1, d2))
             total_original_cost += cost
             
         print("Choose Solution: 1. Kruskal, 2. Prim")
@@ -102,6 +92,7 @@ def main():
         else:
             mst_cost = prim(paths, m)
             
+        # 輸出省下的總成本
         print(total_original_cost - mst_cost)
 
 if __name__ == "__main__":

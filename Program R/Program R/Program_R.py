@@ -1,64 +1,57 @@
-import heapq
-import math
+import sys
 
-class Node:
-    def __init__(self, x, y, sum_val, father):
-        self.x = x
-        self.y = y
-        self.sum = sum_val
-        self.father = father
+def find_min_cost(maze, min_cost, x, y):
+    n = len(maze)
+    m = len(maze[0])
 
-    def __lt__(self, other):
-        return self.sum < other.sum
+    # 超出邊界，回傳無限大
+    if x >= n or y >= m:
+        return float('inf')
+
+    # 到達終點
+    if x == n - 1 and y == m - 1:
+        return maze[x][y]
+
+    # 如果這個格子已經計算過了，回傳紀錄值
+    if min_cost[x][y] != -1:
+        return min_cost[x][y]
+
+    # 遞迴計算往下跟右的最小花費
+    cost_go_down = find_min_cost(maze, min_cost, x + 1, y)
+    cost_go_right = find_min_cost(maze, min_cost, x, y + 1)
+
+    # 找出兩條路徑中的最小值
+    min_next_cost = min(cost_go_down, cost_go_right)
+
+    # 紀錄當前格子的最小花費
+    if min_next_cost == float('inf'):
+        min_cost[x][y] = float('inf')
+    else:
+        min_cost[x][y] = maze[x][y] + min_next_cost
+
+    return min_cost[x][y]
 
 def main():
-    try:
-        input_str = input().split()
-        while not input_str:
-            input_str = input().split()
-            
-        n = int(input_str[0])
-        m = int(input_str[1])
-        
-        maze = []
-        for i in range(n):
-            row_input = input().split()
-            maze.append([int(x) for x in row_input])
-            
-        min_cost = [[math.inf] * m for _ in range(n)]
-        
-        pq = []
-        
-        start_node = Node(0, 0, 0, None)
-        heapq.heappush(pq, start_node)
-        min_cost[0][0] = 0
-        
-        while pq:
-            now = heapq.heappop(pq)
-            
-            if now.x == n - 1 and now.y == m - 1:
-                print(now.sum)
-                return
-                
-            if now.sum > min_cost[now.x][now.y]:
-                continue
-                
-            if now.x + 1 < n:
-                next_sum = now.sum + maze[now.x + 1][now.y]
-                if next_sum < min_cost[now.x + 1][now.y]:
-                    min_cost[now.x + 1][now.y] = next_sum
-                    heapq.heappush(pq, Node(now.x + 1, now.y, next_sum, now))
-                    
-            if now.y + 1 < m:
-                next_sum = now.sum + maze[now.x][now.y + 1]
-                if next_sum < min_cost[now.x][now.y + 1]:
-                    min_cost[now.x][now.y + 1] = next_sum
-                    heapq.heappush(pq, Node(now.x, now.y + 1, next_sum, now))
-                    
-        print("No path found")
-        
-    except EOFError:
-        pass
+    # 讀取輸入
+    input_str = input().split()
+    if not input_str:
+        return
+    
+    n = int(input_str[0])
+    m = int(input_str[1])
+
+    maze = []
+
+    #讀取迷宮
+    for i in range(n):
+        row_input = list(map(int, input().split()))
+        maze.append(row_input)
+
+    min_cost = [[-1 for _ in range(m)] for _ in range(n)] # 初始化最小花費矩陣，-1 表示尚未計算 
+
+    # 計算從 (0, 0) 到 (n-1, m-1) 的最小花費
+    result = find_min_cost(maze, min_cost, 0, 0)
+    print(result)
 
 if __name__ == '__main__':
     main()
