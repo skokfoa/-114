@@ -1,0 +1,5 @@
+IoU Threshold: 0.80
+Number of Fused Boxes: 2
+x1 y1 x2 y2 score weight
+102.50 102.50 202.50 202.50 0.88 2.00
+110.00 110.00 210.00 210.00 0.80 1.00
